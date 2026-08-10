@@ -1,0 +1,90 @@
+import numpy as np
+from data import load_splits
+from baseline import rmse
+
+class Linear:
+    """ Fully connected layer: y = x @ W + b """
+    def __init__(self, n_in, n_out, rng):
+        self.W = rng.normal(0.0, np.sqrt(2.0 / n_in), size=(n_in, n_out))
+        self.b = np.zeros(n_out)
+
+    def forward(self, x):
+        self.x = x
+        return x @ self.W + self.b
+
+    def backward(self, grad):           # grad = dL/dy
+        self.dW = self.x.T @ grad       # dL/dW = dy/dW x dL/dy
+        self.db = grad.sum(axis=0)      # dL/db = dy/db x dL/dy
+        return grad @ self.W.T          # dL/dx = dy/dx x dL/dy
+
+    def parameters(self):
+        return [(self.W, self.dW), (self.b, self.db)]
+
+class ReLU:
+    """ Activation function - Rectified Linear Unit"""
+    def forward(self, x):
+        self.positive = x > 0
+        return x * self.positive
+
+    def backward(self, grad):
+        return grad * self.positive
+
+    def parameters(self):
+        return []
+
+class Sequential:
+    """ Stack of layers """
+    def __init__(self, *layers):
+        self.layers = list(layers)
+
+    def forward(self, x):
+        for layer in self.layers:
+            x = layer.forward(x)
+        return x
+
+    def backward(self, grad):
+        for layer in reversed(self.layers):
+            grad = layer.backward(grad)
+        return grad
+
+    def parameters(self):
+        params = []
+        for layer in self.layers:
+            params.extend(layer.parameters())
+        return params
+
+
+
+class MSELoss:
+    """ Loss function """
+    def forward(self, predictions, targets):
+        self.diff = predictions - targets
+        return float(np.mean(self.diff ** 2))
+
+    def backward(self):
+        return 2.0 * self.diff / self.diff.size # dL/dy
+
+
+if __name__=="__main__":
+    # Load data
+    X_train, X_val, X_test, y_train, y_val, y_test = load_splits()
+
+    # Build one layer
+    rng = np.random.default_rng(0)
+    layer = Linear(8, 1, rng)
+    predictions = layer.forward(X_train)
+
+    print(predictions.shape)
+    print(rmse(predictions, y_train))
+
+    # Check the loss and its gradient
+    loss_fn = MSELoss()
+    print(loss_fn.forward(predictions, y_train))
+    grad = loss_fn.backward()
+    print(grad.shape)
+
+    # Check the backward pass
+    dx = layer.backward(grad)
+    print(layer.dW.shape)
+    print(layer.db.shape)
+    print(dx.shape)
