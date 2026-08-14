@@ -1,8 +1,8 @@
 import numpy as np
-from nn import Linear, SoftmaxCrossEntropy, ReLU, Sequential
+from manual.nn import Linear, SoftmaxCrossEntropy, ReLU, Sequential
 from data import load_digit_splits
 from baseline import accuracy
-from train import train
+from manual.train import train
 
 if __name__=="__main__":
     # Load data

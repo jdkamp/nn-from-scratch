@@ -1,5 +1,5 @@
 import numpy as np
-from nn import ReLU, Linear, Sequential, MSELoss, SoftmaxCrossEntropy
+from manual.nn import ReLU, Linear, Sequential, MSELoss, SoftmaxCrossEntropy
 from data import load_housing_splits, load_digit_splits
 
 def numerical_grad(param, compute_loss, eps=1e-5):
