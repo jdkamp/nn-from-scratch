@@ -1,6 +1,6 @@
-from sklearn.datasets import fetch_california_housing
-from sklearn.datasets import load_digits
+from sklearn.datasets import fetch_california_housing, load_digits, fetch_openml
 import numpy as np
+
 
 
 def describe(X, y, features):
@@ -48,14 +48,31 @@ def load_housing_splits(seed=0):
 
     return X_train, X_val, X_test, y_train, y_val, y_test
 
-def load_digit_splits(seed=0):
+def load_digit_splits(seed=0, as_images=True):
     digits = load_digits()
     # Pixels are 0-16. Scaled, not standardized: some pixels are 0 in every
     # image, so sigma would be 0. Constant divisor, so it can precede the split.
     X = digits.data / 16.0
     y = digits.target
 
+    if as_images:
+        X = X.reshape(-1, 1, 8, 8)  # -1 - number of images, 1 - grey scale, 8, 8 - height, width
+
     return shuffle_and_split(X, y, seed)
+
+def load_mnist_splits(seed=0, as_images=True):
+    from tensorflow.keras.datasets import mnist
+
+    (x_train, y_train), (x_test, y_test) = mnist.load_data()
+
+    X = np.concatenate([x_train, x_test]).astype(float) / 255.0    # combine + scale
+    y = np.concatenate([y_train, y_test]).astype(int)
+
+    X = X.reshape(-1, 1, 28, 28) if as_images else X.reshape(len(X), -1)
+
+    return shuffle_and_split(X, y, seed) 
+
+
 
 
 if __name__=="__main__":
@@ -73,4 +90,7 @@ if __name__=="__main__":
     for name, arr in splits.items():
         print(f"{name:<9} {str(arr.shape):>10} {arr.min():>10.2f} {arr.max():>10.2f} {arr.mean():>10.2f}")
 
+    #X_train, X_val, X_test, y_train, y_val, y_test = load_mnist_splits()
+    #print(X_train.shape, X_train.min(), X_train.max(), y_train[:10])
+    load_mnist_splits()
 

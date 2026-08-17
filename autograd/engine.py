@@ -1,4 +1,6 @@
 import numpy as np
+from autograd.conv_utils import unfold as _unfold, fold as _fold
+
 
 def unbroadcast(grad, shape):
     """Sum grad back down to shape, undoing numpy broadcasting"""
@@ -133,6 +135,54 @@ class Tensor:
 
         return out
 
+    def reshape(self, *shape):
+        out = Tensor(self.data.reshape(*shape), (self,))
+
+        def grad_fn():
+            # Reshaping doesn't change the gradient, only the shape changes
+            self.grad += out.grad.reshape(self.data.shape)
+        out.grad_fn = grad_fn
+
+        return out
+
+    def transpose(self, *axes):
+        out = Tensor(self.data.transpose(*axes), (self,))
+
+        def grad_fn():
+            # Transpose doesn't change the gradient, only the shape changes
+            self.grad += out.grad.transpose(np.argsort(axes))
+        out.grad_fn = grad_fn
+
+        return out
+
+    def unfold(self, kh, kw, stride=1, pad=0):
+        out = Tensor(_unfold(self.data, kh, kw, stride, pad), (self,))
+
+        def grad_fn():
+            # fold is the backward pass of unfold
+            self.grad += _fold(out.grad, self.data.shape, kh, kw, stride, pad)
+        out.grad_fn = grad_fn
+
+        return out
+
+    def max(self, axis, keepdims=False):
+        idx = self.data.argmax(axis=axis)
+        picked = np.expand_dims(idx, axis)
+        out_data = np.take_along_axis(self.data, picked, axis)
+        if not keepdims:
+            out_data = out_data.squeeze(axis)
+
+        out = Tensor(out_data, (self,))
+
+        def grad_fn():
+            # d(max(a))/da = 1 for the max element, else 0
+            g = out.grad if keepdims else np.expand_dims(out.grad, axis)
+            mask = np.zeros_like(self.data)
+            np.put_along_axis(mask, picked, 1.0, axis)
+            self.grad += mask * g
+        out.grad_fn = grad_fn
+
+        return out
 
     def backward(self):
         ordered = []
@@ -154,6 +204,8 @@ class Tensor:
             v.grad_fn()
 
 
+
+
 if __name__=="__main__":
     a = Tensor(2.0)
     b = Tensor(3.0)
@@ -168,4 +220,10 @@ if __name__=="__main__":
     loss = ((x @ W + b).relu() ** 2).mean()
     loss.backward()
 
+    X = Tensor(np.arange(12, dtype=float).reshape(3, 4))
+    y = (x.reshape(2, 6)) * Tensor(np.arange(12, dtype=float).reshape(2, 6)).sum()
+    y.backward()
+    print(x.grad)
+
     print(W.grad.shape, b.grad.shape)
+

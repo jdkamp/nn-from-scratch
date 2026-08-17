@@ -1,6 +1,14 @@
 import numpy as np
 from autograd.engine import Tensor
 
+def predict(model, X, batch_size=512):
+    """Forward pass in batches - returns plain numpy, no graph retained."""
+    outs = []
+    for i in range(0, len(X), batch_size):
+        outs.append(model(Tensor(X[i:i + batch_size])).data)
+    return np.concatenate(outs)
+
+
 def train(model, loss_fn, metric, X_train, y_train, X_val, y_val, learning_rate=0.1,
           n_epochs=50, batch_size=64, higher_is_better=False, seed=0):
     """Mini batch SDG with early stopping"""
@@ -28,8 +36,9 @@ def train(model, loss_fn, metric, X_train, y_train, X_val, y_val, learning_rate=
             model.zero_grad()                               # reset gradients
 
         # Training and validation scores
-        train_score = metric(model(Tensor(X_train)).data, y_train)
-        val_score = metric(model(Tensor(X_val)).data, y_val)
+        train_score = metric(predict(model, X_train), y_train)
+        val_score   = metric(predict(model, X_val), y_val)
+
 
         # Early stopping: save best model parameters
         improved = val_score > best_val if higher_is_better else val_score < best_val

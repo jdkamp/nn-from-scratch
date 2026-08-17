@@ -6,7 +6,7 @@ from manual.train import train
 
 if __name__=="__main__":
     # Load data
-    X_train, X_val, X_test, y_train, y_val, y_test = load_digit_splits()
+    X_train, X_val, X_test, y_train, y_val, y_test = load_digit_splits(as_images=False)
 
     # Setup model
     rng = np.random.default_rng(0)

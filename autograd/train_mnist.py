@@ -1,26 +1,27 @@
 import numpy as np
-from autograd.nn import Linear, SoftMaxCrossEntropy, ReLU, Sequential, Flatten
-from data import load_digit_splits
+from autograd.nn import Linear, ReLU, Sequential, SoftMaxCrossEntropy
+from data import load_mnist_splits
 from baseline import accuracy
 from autograd.train import train, predict
+from autograd.engine import Tensor
 
 if __name__=="__main__":
     # Load data
-    X_train, X_val, X_test, y_train, y_val, y_test = load_digit_splits(as_images=True)
+    X_train, X_val, X_test, y_train, y_val, y_test = load_mnist_splits(as_images=False)
 
     # Setup model
     rng = np.random.default_rng(0)
     model = Sequential(
-        Flatten(),              # (N,1,8,8) -> (N,64)
-        Linear(64, 32, rng),    # -> (N,32)
+        Linear(784, 128, rng),  # (N,784) -> (N,128)
         ReLU(),
-        Linear(32, 10, rng)     # -> (N,10)
+        Linear(128, 10, rng)    # -> (N,10)
     )
+
     
     # Training
     best_val, best_epoch = train(model, SoftMaxCrossEntropy(), accuracy,
                                     X_train, y_train, X_val, y_val,
-                                    n_epochs=50, higher_is_better=True)
+                                    n_epochs=15, higher_is_better=True)
     
     
 

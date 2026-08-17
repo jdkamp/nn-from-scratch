@@ -45,7 +45,7 @@ if __name__=="__main__":
           Sequential(Linear(8, 4, rng), ReLU(), Linear(4, 1, rng)),
           MSELoss(), X_train[:5], y_train[:5])
 
-    X_train, X_val, X_test, y_train, y_val, y_test = load_digit_splits()
+    X_train, X_val, X_test, y_train, y_val, y_test = load_digit_splits(as_images=False)
     check("digits (softmax + cross entropy)",
           Sequential(Linear(64, 4, rng), ReLU(), Linear(4, 10, rng)),
           SoftmaxCrossEntropy(), X_train[:5], y_train[:5])

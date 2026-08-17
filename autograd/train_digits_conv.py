@@ -1,5 +1,5 @@
 import numpy as np
-from autograd.nn import Linear, SoftMaxCrossEntropy, ReLU, Sequential, Flatten
+from autograd.nn import Conv2d, MaxPool2d, Flatten, Linear, ReLU, Sequential, SoftMaxCrossEntropy
 from data import load_digit_splits
 from baseline import accuracy
 from autograd.train import train, predict
@@ -11,10 +11,11 @@ if __name__=="__main__":
     # Setup model
     rng = np.random.default_rng(0)
     model = Sequential(
-        Flatten(),              # (N,1,8,8) -> (N,64)
-        Linear(64, 32, rng),    # -> (N,32)
+        Conv2d(1, 8, 3, rng, padding=1),    # (N,1,8,8) -> (N,8,8,8)
         ReLU(),
-        Linear(32, 10, rng)     # -> (N,10)
+        MaxPool2d(2),                       # -> (N,8,4,4)
+        Flatten(),                          # -> (N,128)
+        Linear(128, 10, rng)                # -> (N,10)
     )
     
     # Training

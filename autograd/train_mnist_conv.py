@@ -1,26 +1,31 @@
 import numpy as np
-from autograd.nn import Linear, SoftMaxCrossEntropy, ReLU, Sequential, Flatten
-from data import load_digit_splits
+from autograd.nn import Conv2d, MaxPool2d, Flatten, Linear, ReLU, Sequential, SoftMaxCrossEntropy
+from data import load_mnist_splits
 from baseline import accuracy
 from autograd.train import train, predict
 
 if __name__=="__main__":
     # Load data
-    X_train, X_val, X_test, y_train, y_val, y_test = load_digit_splits(as_images=True)
+    X_train, X_val, X_test, y_train, y_val, y_test = load_mnist_splits(as_images=True)
 
     # Setup model
     rng = np.random.default_rng(0)
     model = Sequential(
-        Flatten(),              # (N,1,8,8) -> (N,64)
-        Linear(64, 32, rng),    # -> (N,32)
+        Conv2d(1, 8, 3, rng, padding=1),    # (N,1,28,28) -> (N,8,28,28)
         ReLU(),
-        Linear(32, 10, rng)     # -> (N,10)
+        MaxPool2d(2),                       # -> (N,8,14,14)
+        Conv2d(8, 16, 3, rng, padding=1),   # -> (N,16,14,14)
+        ReLU(),
+        MaxPool2d(2),                       # -> (N,16,7,7)
+        Flatten(),                          # -> (N,784)
+        Linear(16*7*7, 10, rng),            # -> (N,10)
     )
+
     
     # Training
     best_val, best_epoch = train(model, SoftMaxCrossEntropy(), accuracy,
                                     X_train, y_train, X_val, y_val,
-                                    n_epochs=50, higher_is_better=True)
+                                    n_epochs=15, higher_is_better=True)
     
     
 
