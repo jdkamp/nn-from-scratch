@@ -45,19 +45,3 @@ def fold(cols, x_shape, kh, kw, stride=1, pad=0):
                j:j + stride*out_w:stride] += cols[:, :, i, j, :, :]
 
     return xp[:, :, pad:pad+in_h, pad:pad+in_w]
-
-
-if __name__ == "__main__":
-    x = np.arange(16, dtype=float).reshape(1, 1, 4, 4)
-    print(x)
-    cols = unfold(x, 2, 2)
-    print(cols.shape)     # (9, 4)  - 3x3 positions, 2x2 window
-    print(cols[0])        # [0. 1. 4. 5.]  - the top-left 2x2 patch
-    print(cols[1])        # [1. 2. 5. 6.]  - shifted one right
-
-
-    counts = fold(np.ones((9, 4)), (1, 1, 4, 4), 2, 2)
-    print(counts[0, 0])
-
-    
-

@@ -1,6 +1,4 @@
 import numpy as np
-from data import load_housing_splits
-from baseline import rmse
 
 class Linear:
     """ Fully connected layer: y = x @ W + b """
@@ -86,27 +84,3 @@ class SoftmaxCrossEntropy:
         return grad / n                             # loss averaged over n samples
 
 
-
-if __name__=="__main__":
-    # Load data
-    X_train, X_val, X_test, y_train, y_val, y_test = load_housing_splits()
-
-    # Build one layer
-    rng = np.random.default_rng(0)
-    layer = Linear(8, 1, rng)
-    predictions = layer.forward(X_train)
-
-    print(predictions.shape)
-    print(rmse(predictions, y_train))
-
-    # Check the loss and its gradient
-    loss_fn = MSELoss()
-    print(loss_fn.forward(predictions, y_train))
-    grad = loss_fn.backward()
-    print(grad.shape)
-
-    # Check the backward pass
-    dx = layer.backward(grad)
-    print(layer.dW.shape)
-    print(layer.db.shape)
-    print(dx.shape)

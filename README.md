@@ -12,7 +12,6 @@ Shared:
 `manual/` - all gradients derived manually:
 - `nn.py` - `Linear`, `ReLU`, `Sequential`, `MSELoss`, `SoftmaxCrossEntropy`: each with `forward` and `backward`
 - `train.py` - mini-batch SGD with early stopping
-- `gradcheck.py` - verifies the analytic gradients against centered differences
 - `train_housing.py`, `train_digits.py` - the entry points
 
 `autograd/` - gradients derived automatically:
@@ -21,6 +20,8 @@ Shared:
 - `conv_utils.py` - utility functions for conv net training
 - `train.py`, `train_housing.py`, `train_digits.py`, `train_mnist.py`
 - `train_digits_conv.py`, `train_mnist_conv.py` - training with conv nets
+
+`tests/`- pytests
 
 ## Run
 

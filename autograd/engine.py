@@ -20,6 +20,7 @@ class Tensor:
         self.inputs = set(inputs)                   # input tensors producing this tensor
 
     def __add__(self, other):
+        other = other if isinstance(other, Tensor) else Tensor(other)
         out = Tensor(self.data + other.data, (self, other))
 
         def grad_fn():
@@ -31,6 +32,7 @@ class Tensor:
         return out
 
     def __mul__(self, other):
+        other = other if isinstance(other, Tensor) else Tensor(other)
         out = Tensor(self.data * other.data, (self, other))
 
         def grad_fn():
@@ -206,24 +208,4 @@ class Tensor:
 
 
 
-if __name__=="__main__":
-    a = Tensor(2.0)
-    b = Tensor(3.0)
-    c = a * b + a
-    c.backward()
-    print(a.grad, b.grad)
-
-    x = Tensor(np.random.rand(4, 3))
-    W = Tensor(np.random.rand(3, 2))
-    b = Tensor(np.zeros(2))
-
-    loss = ((x @ W + b).relu() ** 2).mean()
-    loss.backward()
-
-    X = Tensor(np.arange(12, dtype=float).reshape(3, 4))
-    y = (x.reshape(2, 6)) * Tensor(np.arange(12, dtype=float).reshape(2, 6)).sum()
-    y.backward()
-    print(x.grad)
-
-    print(W.grad.shape, b.grad.shape)
 
